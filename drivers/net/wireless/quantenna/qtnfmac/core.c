@@ -158,15 +158,6 @@ static void qtnf_netdev_tx_timeout(struct net_device *ndev, unsigned int txqueue
 		queue_work(bus->workqueue, &vif->reset_work);
 	}
 }
-#if LINUX_VERSION_IS_LESS(5,6,0)
-/* Just declare it here to keep sparse happy */
-void bp_qtnf_netdev_tx_timeout(struct net_device *dev);
-void bp_qtnf_netdev_tx_timeout(struct net_device *dev)
-{
-	qtnf_netdev_tx_timeout(dev, 0);
-}
-EXPORT_SYMBOL_GPL(bp_qtnf_netdev_tx_timeout);
-#endif
 
 static int qtnf_netdev_set_mac_address(struct net_device *ndev, void *addr)
 {
@@ -205,32 +196,12 @@ static int qtnf_netdev_port_parent_id(struct net_device *ndev,
 	return 0;
 }
 
-static int qtnf_netdev_alloc_pcpu_stats(struct net_device *dev)
-{
-	dev->tstats = netdev_alloc_pcpu_stats(struct pcpu_sw_netstats);
-
-	return dev->tstats ? 0 : -ENOMEM;
-}
-
-static void qtnf_netdev_free_pcpu_stats(struct net_device *dev)
-{
-	free_percpu(dev->tstats);
-}
-
 /* Network device ops handlers */
 const struct net_device_ops qtnf_netdev_ops = {
-	.ndo_init = qtnf_netdev_alloc_pcpu_stats,
-	.ndo_uninit = qtnf_netdev_free_pcpu_stats,
 	.ndo_open = qtnf_netdev_open,
 	.ndo_stop = qtnf_netdev_close,
 	.ndo_start_xmit = qtnf_netdev_hard_start_xmit,
-#if LINUX_VERSION_IS_GEQ(5,6,0)
 	.ndo_tx_timeout = qtnf_netdev_tx_timeout,
-#else
-	.ndo_tx_timeout = bp_qtnf_netdev_tx_timeout,
-#endif
-	
-	.ndo_get_stats64 = dev_get_tstats64,
 	.ndo_set_mac_address = qtnf_netdev_set_mac_address,
 	.ndo_get_port_parent_id = qtnf_netdev_port_parent_id,
 };
@@ -497,6 +468,7 @@ int qtnf_core_net_attach(struct qtnf_wmac *mac, struct qtnf_vif *vif,
 	dev->watchdog_timeo = QTNF_DEF_WDOG_TIMEOUT;
 	dev->tx_queue_len = 100;
 	dev->ethtool_ops = &qtnf_ethtool_ops;
+	dev->pcpu_stat_type = NETDEV_PCPU_STAT_TSTATS;
 
 	if (qtnf_hwcap_is_set(&mac->bus->hw_info, QLINK_HW_CAPAB_HW_BRIDGE))
 		dev->needed_tailroom = sizeof(struct qtnf_frame_meta_info);
@@ -549,7 +521,7 @@ static void qtnf_core_mac_detach(struct qtnf_bus *bus, unsigned int macid)
 		if (!wiphy->bands[band])
 			continue;
 
-		kfree(wiphy->bands[band]->iftype_data);
+		kfree((__force void *)wiphy->bands[band]->iftype_data);
 		wiphy->bands[band]->n_iftype_data = 0;
 
 		kfree(wiphy->bands[band]->channels);
@@ -658,16 +630,10 @@ bool qtnf_netdev_is_qtn(const struct net_device *ndev)
 	return ndev->netdev_ops == &qtnf_netdev_ops;
 }
 
-#if LINUX_VERSION_IS_GEQ(5,9,0)
 static int qtnf_check_br_ports(struct net_device *dev,
 			       struct netdev_nested_priv *priv)
 {
 	struct net_device *ndev = (struct net_device *)priv->data;
-#else
-static int qtnf_check_br_ports(struct net_device *dev, void *data)
-{
-	struct net_device *ndev = data;
-#endif
 
 	if (dev != ndev && netdev_port_same_parent_id(dev, ndev))
 		return -ENOTSUPP;
@@ -680,11 +646,9 @@ static int qtnf_core_netdevice_event(struct notifier_block *nb,
 {
 	struct net_device *ndev = netdev_notifier_info_to_dev(ptr);
 	const struct netdev_notifier_changeupper_info *info;
-#if LINUX_VERSION_IS_GEQ(5,9,0)
 	struct netdev_nested_priv priv = {
 		.data = (void *)ndev,
 	};
-#endif
 	struct net_device *brdev;
 	struct qtnf_vif *vif;
 	struct qtnf_bus *bus;
@@ -724,11 +688,7 @@ static int qtnf_core_netdevice_event(struct notifier_block *nb,
 		} else {
 			ret = netdev_walk_all_lower_dev(brdev,
 							qtnf_check_br_ports,
-#if LINUX_VERSION_IS_GEQ(5,9,0)
 							&priv);
-#else
-							ndev);
-#endif
 		}
 
 		break;

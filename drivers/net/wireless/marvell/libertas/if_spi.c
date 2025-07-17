@@ -232,14 +232,9 @@ static int spu_read(struct if_spi_card *card, u16 reg, u8 *buf, int len)
 		spi_message_add_tail(&dummy_trans, &m);
 	} else {
 		/* Busy-wait while the SPU fills the FIFO */
-#if LINUX_VERSION_IS_GEQ(5,5,0)
 		reg_trans.delay.value =
 			DIV_ROUND_UP((100 + (delay * 10)), 1000);
 		reg_trans.delay.unit = SPI_DELAY_UNIT_USECS;
-#else
-		reg_trans.delay_usecs =
-			DIV_ROUND_UP((100 + (delay * 10)), 1000);
-#endif /* >= 5.5 */
 	}
 
 	/* read in data */
@@ -1057,7 +1052,7 @@ static int if_spi_init_card(struct if_spi_card *card)
 				"attached to SPI bus_num %d, chip_select %d. "
 				"spi->max_speed_hz=%d\n",
 				card->card_id, card->card_rev,
-				card->spi->master->bus_num,
+				card->spi->controller->bus_num,
 				spi_get_chipselect(card->spi, 0),
 				card->spi->max_speed_hz);
 		err = if_spi_prog_helper_firmware(card, helper);
@@ -1220,6 +1215,13 @@ static void libertas_spi_remove(struct spi_device *spi)
 		card->pdata->teardown(spi);
 	free_if_spi_card(card);
 }
+#if LINUX_VERSION_IS_LESS(5,18,0)
+static int bp_libertas_spi_remove(struct spi_device *spi) {
+	libertas_spi_remove(spi);
+
+	return 0;
+}
+#endif
 
 static int if_spi_suspend(struct device *dev)
 {
@@ -1257,7 +1259,12 @@ static const struct dev_pm_ops if_spi_pm_ops = {
 
 static struct spi_driver libertas_spi_driver = {
 	.probe	= if_spi_probe,
+#if LINUX_VERSION_IS_GEQ(5,18,0)
 	.remove = libertas_spi_remove,
+#else
+	.remove = bp_libertas_spi_remove,
+#endif
+	
 	.driver = {
 		.name	= "libertas_spi",
 		.pm	= &if_spi_pm_ops,

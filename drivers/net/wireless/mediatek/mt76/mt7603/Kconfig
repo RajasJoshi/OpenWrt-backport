@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 config MT7603E
+	depends on !KERNEL_4_19
 	tristate "MediaTek MT7603E (PCIe) and MT76x8 WLAN support"
 	depends on m
 	select MT76_CORE

@@ -1,4 +1,5 @@
 config MHI_BUS_EP
+	depends on !KERNEL_6_1
 	tristate "Modem Host Interface (MHI) bus Endpoint implementation"
 	depends on m
 	help

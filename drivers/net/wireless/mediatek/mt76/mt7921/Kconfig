@@ -6,7 +6,7 @@ config MT7921_COMMON
 	select BPAUTO_WANT_DEV_COREDUMP
 
 config MT7921E
-	depends on !KERNEL_4_6
+	depends on !KERNEL_4_19
 	tristate "MediaTek MT7921E (PCIe) support"
 	depends on m
 	select MT7921_COMMON
@@ -18,6 +18,7 @@ config MT7921E
 	  To compile this driver as a module, choose M here.
 
 config MT7921S
+	depends on !KERNEL_4_19
 	tristate "MediaTek MT7921S (SDIO) support"
 	depends on m
 	select MT76_SDIO
@@ -30,6 +31,7 @@ config MT7921S
 	  To compile this driver as a module, choose M here.
 
 config MT7921U
+	depends on !KERNEL_4_19
 	tristate "MediaTek MT7921U (USB) support"
 	depends on m
 	select MT792x_USB

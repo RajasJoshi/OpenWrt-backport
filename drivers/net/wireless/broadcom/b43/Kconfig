@@ -63,21 +63,21 @@ endchoice
 config B43_PCI_AUTOSELECT
 	bool
 	depends on B43 && SSB_PCIHOST_POSSIBLE
-	select SSB_PCIHOST
-	select SSB_B43_PCI_BRIDGE
+	depends on SSB_PCIHOST
+	depends on SSB_B43_PCI_BRIDGE
 	default y
 
 # Auto-select SSB PCICORE driver, if possible
 config B43_PCICORE_AUTOSELECT
 	bool
 	depends on B43 && SSB_DRIVER_PCICORE_POSSIBLE
-	select SSB_DRIVER_PCICORE
+	depends on SSB_DRIVER_PCICORE
 	default y
 
 config B43_SDIO
 	bool "Broadcom 43xx SDIO device support"
 	depends on B43 && B43_SSB && SSB_SDIOHOST_POSSIBLE
-	select SSB_SDIOHOST
+	depends on SSB_SDIOHOST
 	help
 	  Broadcom 43xx device support for Soft-MAC SDIO devices.
 
@@ -96,13 +96,13 @@ config B43_SDIO
 config B43_BCMA_PIO
 	bool
 	depends on B43 && B43_BCMA
-	select BCMA_BLOCKIO
+	depends on BCMA_BLOCKIO
 	default y
 
 config B43_PIO
 	bool
 	depends on B43 && B43_SSB
-	select SSB_BLOCKIO
+	depends on SSB_BLOCKIO
 	default y
 
 config B43_PHY_G

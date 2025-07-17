@@ -4,20 +4,6 @@
 #include <linux/version.h>
 #include <linux/device.h>
 
-#if LINUX_VERSION_IS_LESS(4,9,0) && \
-    !LINUX_VERSION_IN_RANGE(4,8,4, 4,9,0) && \
-    !LINUX_VERSION_IN_RANGE(4,7,10, 4,8,0)
-static inline const struct file_operations *
-debugfs_real_fops(const struct file *filp)
-{
-	/*
-	 * Neither the pointer to the struct file_operations, nor its
-	 * contents ever change -- srcu_dereference() is not needed here.
-	 */
-	return filp->f_path.dentry->d_fsdata;
-}
-#endif /* <4.9.0 but not >= 4.8.4, 4.7.10 */
-
 #ifndef DEFINE_DEBUGFS_ATTRIBUTE
 #define DEFINE_DEBUGFS_ATTRIBUTE(__fops, __get, __set, __fmt) \
 	DEFINE_SIMPLE_ATTRIBUTE(__fops, __get, __set, __fmt)
@@ -36,5 +22,31 @@ static inline void debugfs_create_xul(const char *name, umode_t mode,
 		debugfs_create_x64(name, mode, parent, (u64 *)value);
 }
 #endif
+
+#if LINUX_VERSION_IS_LESS(6,7,0)
+/**
+ * struct debugfs_cancellation - cancellation data
+ * @list: internal, for keeping track
+ * @cancel: callback to call
+ * @cancel_data: extra data for the callback to call
+ */
+struct debugfs_cancellation {
+	struct list_head list;
+	void (*cancel)(struct dentry *, void *);
+	void *cancel_data;
+};
+
+static inline void
+debugfs_enter_cancellation(struct file *file,
+			   struct debugfs_cancellation *cancellation)
+{
+}
+
+static inline void
+debugfs_leave_cancellation(struct file *file,
+			   struct debugfs_cancellation *cancellation)
+{
+}
+#endif /* <6.7 */
 
 #endif /* __BACKPORT_DEBUGFS_H_ */

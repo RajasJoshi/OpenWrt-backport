@@ -30,7 +30,7 @@ static const char driver_name[] = "sierra_net";
 #include <linux/usb/cdc.h>
 #include <net/ip.h>
 #include <net/udp.h>
-#include <asm/unaligned.h>
+#include <linux/unaligned.h>
 #include <linux/usb/usbnet.h>
 
 #define SWI_USB_REQUEST_GET_FW_ATTR	0x06
@@ -182,12 +182,7 @@ static const struct net_device_ops sierra_net_device_ops = {
 	.ndo_open               = usbnet_open,
 	.ndo_stop               = usbnet_stop,
 	.ndo_start_xmit         = usbnet_start_xmit,
-#if LINUX_VERSION_IS_GEQ(5,6,0)
 	.ndo_tx_timeout         = usbnet_tx_timeout,
-#else
-	.ndo_tx_timeout = bp_usbnet_tx_timeout,
-#endif
-	
 	.ndo_change_mtu         = usbnet_change_mtu,
 	.ndo_get_stats64        = dev_get_tstats64,
 	.ndo_set_mac_address    = eth_mac_addr,

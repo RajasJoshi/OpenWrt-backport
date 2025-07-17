@@ -7,6 +7,7 @@ config MT7615_COMMON
 	select MT76_CONNAC_LIB
 
 config MT7615E
+	depends on !KERNEL_4_19
 	tristate "MediaTek MT7615E and MT7663E (PCIe) support"
 	depends on m
 	select MT7615_COMMON
@@ -37,6 +38,7 @@ config MT7663_USB_SDIO_COMMON
 	select MT7615_COMMON
 
 config MT7663U
+	depends on !KERNEL_4_19
 	tristate "MediaTek MT7663U (USB) support"
 	depends on m
 	select MT76_USB
@@ -49,6 +51,7 @@ config MT7663U
 	  To compile this driver as a module, choose M here.
 
 config MT7663S
+	depends on !KERNEL_4_19
 	tristate "MediaTek MT7663S (SDIO) support"
 	depends on m
 	select MT76_SDIO

@@ -25,29 +25,6 @@ static inline int thermal_zone_device_disable(struct thermal_zone_device *tz)
 { return 0; }
 #endif /* < 5.9 */
 
-#if LINUX_VERSION_IS_LESS(4,9,0)
-/* Thermal notification reason */
-enum thermal_notify_event {
-	THERMAL_EVENT_UNSPECIFIED, /* Unspecified event */
-	THERMAL_EVENT_TEMP_SAMPLE, /* New Temperature sample */
-	THERMAL_TRIP_VIOLATED, /* TRIP Point violation */
-	THERMAL_TRIP_CHANGED, /* TRIP Point temperature changed */
-	THERMAL_DEVICE_DOWN, /* Thermal device is down */
-	THERMAL_DEVICE_UP, /* Thermal device is up after a down event */
-	THERMAL_DEVICE_POWER_CAPABILITY_CHANGED, /* power capability changed */
-	THERMAL_TABLE_CHANGED, /* Thermal table(s) changed */
-	THERMAL_EVENT_KEEP_ALIVE, /* Request for user space handler to respond */
-};
-
-static inline void
-backport_thermal_zone_device_update(struct thermal_zone_device *tz,
-				    enum thermal_notify_event event)
-{
-	thermal_zone_device_update(tz);
-}
-#define thermal_zone_device_update LINUX_BACKPORT(thermal_zone_device_update)
-#endif /* < 4.9 */
-
 #if LINUX_VERSION_IS_LESS(6,4,0)
 #define thermal_zone_device_priv LINUX_BACKPORT(thermal_zone_device_priv)
 static inline void *thermal_zone_device_priv(struct thermal_zone_device *tzd)
@@ -59,5 +36,26 @@ static inline void *thermal_zone_device_priv(struct thermal_zone_device *tzd)
 #endif
 }
 #endif
+
+#if LINUX_VERSION_IS_LESS(6,6,0)
+#define for_each_thermal_trip LINUX_BACKPORT(for_each_thermal_trip)
+static inline int for_each_thermal_trip(struct thermal_zone_device *tz,
+					int (*cb)(struct thermal_trip *, void *),
+					void *data)
+{
+	int i, ret;
+
+	if (!tz->num_trips)
+		return -ENODATA;
+
+	for (i = 0; i < tz->num_trips; i++) {
+		ret = cb(&tz->trips[i], data);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+#endif /* < 6.6 */
 
 #endif /* __BACKPORT_LINUX_THERMAL_H */

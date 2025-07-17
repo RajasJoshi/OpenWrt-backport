@@ -317,8 +317,6 @@ static int ipw2100_get_firmware(struct ipw2100_priv *priv,
 				struct ipw2100_fw *fw);
 static int ipw2100_get_fwversion(struct ipw2100_priv *priv, char *buf,
 				 size_t max);
-static int ipw2100_get_ucodeversion(struct ipw2100_priv *priv, char *buf,
-				    size_t max);
 static void ipw2100_release_firmware(struct ipw2100_priv *priv,
 				     struct ipw2100_fw *fw);
 static int ipw2100_ucode_download(struct ipw2100_priv *priv,
@@ -2520,7 +2518,7 @@ static void isr_rx_monitor(struct ipw2100_priv *priv, int i,
 	 * to build this manually element by element, we can write it much
 	 * more efficiently than we can parse it. ORDER MATTERS HERE */
 	struct ipw_rt_hdr {
-		struct ieee80211_radiotap_header rt_hdr;
+		struct ieee80211_radiotap_header_fixed rt_hdr;
 		s8 rt_dbmsignal; /* signal in dbM, kluged to signed */
 	} *ipw_rt;
 
@@ -5835,15 +5833,6 @@ static void ipw2100_tx_timeout(struct net_device *dev, unsigned int txqueue)
 		       dev->name);
 	schedule_reset(priv);
 }
-#if LINUX_VERSION_IS_LESS(5,6,0)
-/* Just declare it here to keep sparse happy */
-void bp_ipw2100_tx_timeout(struct net_device *dev);
-void bp_ipw2100_tx_timeout(struct net_device *dev)
-{
-	ipw2100_tx_timeout(dev, 0);
-}
-EXPORT_SYMBOL_GPL(bp_ipw2100_tx_timeout);
-#endif
 
 static int ipw2100_wpa_enable(struct ipw2100_priv *priv, int value)
 {
@@ -5903,17 +5892,14 @@ static void ipw_ethtool_get_drvinfo(struct net_device *dev,
 				    struct ethtool_drvinfo *info)
 {
 	struct ipw2100_priv *priv = libipw_priv(dev);
-	char fw_ver[64], ucode_ver[64];
+	char fw_ver[64];
 
 	strscpy(info->driver, DRV_NAME, sizeof(info->driver));
 	strscpy(info->version, DRV_VERSION, sizeof(info->version));
 
 	ipw2100_get_fwversion(priv, fw_ver, sizeof(fw_ver));
-	ipw2100_get_ucodeversion(priv, ucode_ver, sizeof(ucode_ver));
 
-	snprintf(info->fw_version, sizeof(info->fw_version), "%s:%d:%s",
-		 fw_ver, priv->eeprom_version, ucode_ver);
-
+	strscpy(info->fw_version, fw_ver, sizeof(info->fw_version));
 	strscpy(info->bus_info, pci_name(priv->pci_dev),
 		sizeof(info->bus_info));
 }
@@ -6008,12 +5994,7 @@ static const struct net_device_ops ipw2100_netdev_ops = {
 	.ndo_open		= ipw2100_open,
 	.ndo_stop		= ipw2100_close,
 	.ndo_start_xmit		= libipw_xmit,
-#if LINUX_VERSION_IS_GEQ(5,6,0)
 	.ndo_tx_timeout		= ipw2100_tx_timeout,
-#else
-	.ndo_tx_timeout = bp_ipw2100_tx_timeout,
-#endif
-	
 	.ndo_set_mac_address	= ipw2100_set_address,
 	.ndo_validate_addr	= eth_validate_addr,
 };
@@ -8418,17 +8399,6 @@ static int ipw2100_get_fwversion(struct ipw2100_priv *priv, char *buf,
 		buf[i] = ver[i];
 	buf[i] = '\0';
 	return tmp;
-}
-
-static int ipw2100_get_ucodeversion(struct ipw2100_priv *priv, char *buf,
-				    size_t max)
-{
-	u32 ver;
-	u32 len = sizeof(ver);
-	/* microcode version is a 32 bit integer */
-	if (ipw2100_get_ordinal(priv, IPW_ORD_UCODE_VERSION, &ver, &len))
-		return -EIO;
-	return snprintf(buf, max, "%08X", ver);
 }
 
 /*

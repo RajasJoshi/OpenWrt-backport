@@ -17,6 +17,5 @@ libertas_spi-objs += if_spi.o
 
 obj-$(CPTCFG_LIBERTAS)     += libertas.o
 obj-$(CPTCFG_LIBERTAS_USB) += usb8xxx.o
-obj-$(CPTCFG_LIBERTAS_CS)  += libertas_cs.o
 obj-$(CPTCFG_LIBERTAS_SDIO) += libertas_sdio.o
 obj-$(CPTCFG_LIBERTAS_SPI) += libertas_spi.o

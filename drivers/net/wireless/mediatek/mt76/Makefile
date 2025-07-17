@@ -10,7 +10,7 @@ obj-$(CPTCFG_MT792x_USB) += mt792x-usb.o
 
 mt76-y := \
 	mmio.o util.o trace.o dma.o mac80211.o debugfs.o eeprom.o \
-	tx.o agg-rx.o mcu.o
+	tx.o agg-rx.o mcu.o wed.o
 
 mt76-$(CONFIG_PCI) += pci.o
 mt76-$(CPTCFG_NL80211_TESTMODE) += testmode.o
@@ -44,3 +44,4 @@ obj-$(CPTCFG_MT7615_COMMON) += mt7615/
 obj-$(CPTCFG_MT7915E) += mt7915/
 obj-$(CPTCFG_MT7921_COMMON) += mt7921/
 obj-$(CPTCFG_MT7996E) += mt7996/
+obj-$(CPTCFG_MT7925_COMMON) += mt7925/

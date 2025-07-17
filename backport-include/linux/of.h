@@ -7,8 +7,4 @@
 #define of_property_present of_property_read_bool
 #endif
 
-#if LINUX_VERSION_IS_LESS(6,4,0)
-#include <linux/of_device.h>
-#endif
-
 #endif

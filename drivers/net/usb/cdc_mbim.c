@@ -98,12 +98,7 @@ static const struct net_device_ops cdc_mbim_netdev_ops = {
 	.ndo_open             = usbnet_open,
 	.ndo_stop             = usbnet_stop,
 	.ndo_start_xmit       = usbnet_start_xmit,
-#if LINUX_VERSION_IS_GEQ(5,6,0)
 	.ndo_tx_timeout       = usbnet_tx_timeout,
-#else
-	.ndo_tx_timeout = bp_usbnet_tx_timeout,
-#endif
-	
 	.ndo_get_stats64      = dev_get_tstats64,
 	.ndo_change_mtu       = cdc_ncm_change_mtu,
 	.ndo_set_mac_address  = eth_mac_addr,
@@ -344,7 +339,7 @@ static void do_neigh_solicit(struct usbnet *dev, u8 *buf, u16 tci)
 	in6_dev = in6_dev_get(netdev);
 	if (!in6_dev)
 		goto out;
-	is_router = !!in6_dev->cnf.forwarding;
+	is_router = !!READ_ONCE(in6_dev->cnf.forwarding);
 	in6_dev_put(in6_dev);
 
 	/* ipv6_stub != NULL if in6_dev_get returned an inet6_dev */

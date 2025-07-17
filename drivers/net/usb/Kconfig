@@ -110,6 +110,7 @@ config USB_RTL8152
 	tristate "Realtek RTL8152/RTL8153 Based USB Ethernet Adapters"
 	depends on m
 	depends on MII
+	depends on PHYLIB
 	depends on CRC32
 	depends on CRYPTO
 	depends on CRYPTO_HASH
@@ -144,7 +145,6 @@ config USB_LAN78XX
 	  module will be called lan78xx.
 
 config USB_USBNET
-	depends on !KERNEL_4_6
 	tristate "Multi-purpose USB Networking Framework"
 	depends on m
 	depends on MII

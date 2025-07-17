@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: ISC
 config MT7915E
-	depends on !KERNEL_4_6
+	depends on !KERNEL_4_19
 	tristate "MediaTek MT7915E (PCIe) support"
 	depends on m
 	select MT76_CONNAC_LIB
