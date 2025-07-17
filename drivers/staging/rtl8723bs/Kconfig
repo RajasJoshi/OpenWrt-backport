@@ -6,6 +6,7 @@ config RTL8723BS
 	depends on WLAN && MMC && CFG80211
 	depends on m
 	depends on CRYPTO
+	depends on CRYPTO_LIB_AES
 	select BPAUTO_CRYPTO_LIB_ARC4
 	help
 	This option enables support for RTL8723BS SDIO drivers, such as

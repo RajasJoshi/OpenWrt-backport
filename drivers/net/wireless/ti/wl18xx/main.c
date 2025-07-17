@@ -2097,9 +2097,14 @@ MODULE_DEVICE_TABLE(platform, wl18xx_id_table);
 
 static struct platform_driver wl18xx_driver = {
 	.probe		= wl18xx_probe,
-	.remove_new	= wlcore_remove,
+#if LINUX_VERSION_IS_GEQ(6,13,0)
+	.remove		= wlcore_remove,
+#else
+	.remove = bp_wlcore_remove,
+#endif
+	
 	.id_table	= wl18xx_id_table,
-	.driver = {
+	.driver		= {
 		.name	= "wl18xx_driver",
 	}
 };

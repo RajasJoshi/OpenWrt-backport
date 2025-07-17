@@ -4,7 +4,6 @@ config LIBERTAS
 	depends on m
 	depends on USB || MMC || SPI
 	depends on CFG80211
-	select LIB80211
 	depends on FW_LOADER
 	help
 	  A library for Marvell Libertas 8xxx devices.

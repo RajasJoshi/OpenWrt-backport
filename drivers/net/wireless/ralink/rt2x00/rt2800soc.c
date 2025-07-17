@@ -249,7 +249,12 @@ static struct platform_driver rt2800soc_driver = {
 		.mod_name	= KBUILD_MODNAME,
 	},
 	.probe		= rt2800soc_probe,
+#if LINUX_VERSION_IS_GEQ(6,13,0)
 	.remove		= rt2x00soc_remove,
+#else
+	.remove = bp_rt2x00soc_remove,
+#endif
+	
 	.suspend	= rt2x00soc_suspend,
 	.resume		= rt2x00soc_resume,
 };

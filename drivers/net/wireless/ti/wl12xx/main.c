@@ -1930,6 +1930,13 @@ static void wl12xx_remove(struct platform_device *pdev)
 
 	wlcore_remove(pdev);
 }
+#if LINUX_VERSION_IS_LESS(6,13,0)
+static int bp_wl12xx_remove(struct platform_device *pdev) {
+	wl12xx_remove(pdev);
+
+	return 0;
+}
+#endif
 
 static const struct platform_device_id wl12xx_id_table[] = {
 	{ "wl12xx", 0 },
@@ -1939,7 +1946,12 @@ MODULE_DEVICE_TABLE(platform, wl12xx_id_table);
 
 static struct platform_driver wl12xx_driver = {
 	.probe		= wl12xx_probe,
-	.remove_new	= wl12xx_remove,
+#if LINUX_VERSION_IS_GEQ(6,13,0)
+	.remove		= wl12xx_remove,
+#else
+	.remove = bp_wl12xx_remove,
+#endif
+	
 	.id_table	= wl12xx_id_table,
 	.driver = {
 		.name	= "wl12xx_driver",

@@ -156,14 +156,26 @@ static void ath_ahb_remove(struct platform_device *pdev)
 		ieee80211_free_hw(sc->hw);
 	}
 }
+#if LINUX_VERSION_IS_LESS(6,13,0)
+static int bp_ath_ahb_remove(struct platform_device *pdev) {
+	ath_ahb_remove(pdev);
+
+	return 0;
+}
+#endif
 
 static struct platform_driver ath_ahb_driver = {
-	.probe      = ath_ahb_probe,
-	.remove_new = ath_ahb_remove,
-	.driver		= {
-		.name	= "ath9k",
+	.probe = ath_ahb_probe,
+#if LINUX_VERSION_IS_GEQ(6,13,0)
+	.remove = ath_ahb_remove,
+#else
+	.remove = bp_ath_ahb_remove,
+#endif
+	
+	.driver = {
+		.name = "ath9k",
 	},
-	.id_table    = ath9k_platform_id_table,
+	.id_table = ath9k_platform_id_table,
 };
 
 MODULE_DEVICE_TABLE(platform, ath9k_platform_id_table);

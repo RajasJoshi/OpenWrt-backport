@@ -561,7 +561,10 @@ struct brcmf_mp_device *brcmf_get_module_param(struct device *dev,
 	if (!found) {
 		/* No platform data for this device, try OF and DMI data */
 		brcmf_dmi_probe(settings, chip, chiprev);
-		brcmf_of_probe(dev, bus_type, settings);
+		if (brcmf_of_probe(dev, bus_type, settings) == -EPROBE_DEFER) {
+			kfree(settings);
+			return ERR_PTR(-EPROBE_DEFER);
+		}
 		brcmf_acpi_probe(dev, bus_type, settings);
 	}
 	return settings;
@@ -591,9 +594,21 @@ static void brcmf_common_pd_remove(struct platform_device *pdev)
 	if (brcmfmac_pdata->power_off)
 		brcmfmac_pdata->power_off();
 }
+#if LINUX_VERSION_IS_LESS(6,13,0)
+static int bp_brcmf_common_pd_remove(struct platform_device *pdev) {
+	brcmf_common_pd_remove(pdev);
+
+	return 0;
+}
+#endif
 
 static struct platform_driver brcmf_pd = {
-	.remove_new	= brcmf_common_pd_remove,
+#if LINUX_VERSION_IS_GEQ(6,13,0)
+	.remove		= brcmf_common_pd_remove,
+#else
+	.remove = bp_brcmf_common_pd_remove,
+#endif
+	
 	.driver		= {
 		.name	= BRCMFMAC_PDATA_NAME,
 	}

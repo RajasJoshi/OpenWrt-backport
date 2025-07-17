@@ -442,8 +442,8 @@ static void cw1200_spi_disconnect(struct spi_device *func)
 			cw1200_core_release(self->core);
 			self->core = NULL;
 		}
+		cw1200_spi_off(self, dev_get_platdata(&func->dev));
 	}
-	cw1200_spi_off(self, dev_get_platdata(&func->dev));
 }
 #if LINUX_VERSION_IS_LESS(5,18,0)
 static int bp_cw1200_spi_disconnect(struct spi_device *spi) {

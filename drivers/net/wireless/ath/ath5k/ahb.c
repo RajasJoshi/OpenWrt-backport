@@ -216,12 +216,24 @@ static void ath_ahb_remove(struct platform_device *pdev)
 	iounmap(ah->iobase);
 	ieee80211_free_hw(hw);
 }
+#if LINUX_VERSION_IS_LESS(6,13,0)
+static int bp_ath_ahb_remove(struct platform_device *pdev) {
+	ath_ahb_remove(pdev);
+
+	return 0;
+}
+#endif
 
 static struct platform_driver ath_ahb_driver = {
-	.probe      = ath_ahb_probe,
-	.remove_new = ath_ahb_remove,
-	.driver		= {
-		.name	= "ar231x-wmac",
+	.probe = ath_ahb_probe,
+#if LINUX_VERSION_IS_GEQ(6,13,0)
+	.remove = ath_ahb_remove,
+#else
+	.remove = bp_ath_ahb_remove,
+#endif
+	
+	.driver = {
+		.name = "ar231x-wmac",
 	},
 };
 

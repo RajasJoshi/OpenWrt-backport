@@ -835,14 +835,26 @@ static void ath10k_ahb_remove(struct platform_device *pdev)
 	ath10k_ahb_resource_deinit(ar);
 	ath10k_core_destroy(ar);
 }
+#if LINUX_VERSION_IS_LESS(6,13,0)
+static int bp_ath10k_ahb_remove(struct platform_device *pdev) {
+	ath10k_ahb_remove(pdev);
+
+	return 0;
+}
+#endif
 
 static struct platform_driver ath10k_ahb_driver = {
-	.driver         = {
-		.name   = "ath10k_ahb",
+	.driver = {
+		.name = "ath10k_ahb",
 		.of_match_table = ath10k_ahb_of_match,
 	},
-	.probe  = ath10k_ahb_probe,
-	.remove_new = ath10k_ahb_remove,
+	.probe = ath10k_ahb_probe,
+#if LINUX_VERSION_IS_GEQ(6,13,0)
+	.remove = ath10k_ahb_remove,
+#else
+	.remove = bp_ath10k_ahb_remove,
+#endif
+
 };
 
 int ath10k_ahb_init(void)

@@ -170,7 +170,7 @@ config QCOM_RMTFS_MEM
 	depends on n
 	tristate "Qualcomm Remote Filesystem memory driver"
 	depends on m
-	depends on ARCH_QCOM
+	depends on ARCH_QCOM || COMPILE_TEST
 	depends on QCOM_SCM
 	help
 	  The Qualcomm remote filesystem memory driver is used for allocating

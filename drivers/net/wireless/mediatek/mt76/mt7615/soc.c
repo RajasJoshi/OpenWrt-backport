@@ -51,6 +51,13 @@ static void mt7622_wmac_remove(struct platform_device *pdev)
 
 	mt7615_unregister_device(dev);
 }
+#if LINUX_VERSION_IS_LESS(6,13,0)
+static int bp_mt7622_wmac_remove(struct platform_device *pdev) {
+	mt7622_wmac_remove(pdev);
+
+	return 0;
+}
+#endif
 
 static const struct of_device_id mt7622_wmac_of_match[] = {
 	{ .compatible = "mediatek,mt7622-wmac" },
@@ -63,7 +70,12 @@ struct platform_driver mt7622_wmac_driver = {
 		.of_match_table = mt7622_wmac_of_match,
 	},
 	.probe = mt7622_wmac_probe,
-	.remove_new = mt7622_wmac_remove,
+#if LINUX_VERSION_IS_GEQ(6,13,0)
+	.remove = mt7622_wmac_remove,
+#else
+	.remove = bp_mt7622_wmac_remove,
+#endif
+
 };
 
 MODULE_FIRMWARE(MT7622_FIRMWARE_N9);
