@@ -243,13 +243,20 @@ static int rt2800soc_probe(struct platform_device *pdev)
 	return rt2x00soc_probe(pdev, &rt2800soc_ops);
 }
 
+#if LINUX_VERSION_IS_LESS(6,11,0)
+static int bp_rt2x00soc_remove(struct platform_device *pdev) {
+	rt2x00soc_remove(pdev);
+
+	return 0;
+}
+#endif
 static struct platform_driver rt2800soc_driver = {
 	.driver		= {
 		.name		= "rt2800_wmac",
 		.mod_name	= KBUILD_MODNAME,
 	},
 	.probe		= rt2800soc_probe,
-#if LINUX_VERSION_IS_GEQ(6,13,0)
+#if LINUX_VERSION_IS_GEQ(6,11,0)
 	.remove		= rt2x00soc_remove,
 #else
 	.remove = bp_rt2x00soc_remove,

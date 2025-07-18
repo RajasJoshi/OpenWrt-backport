@@ -1674,13 +1674,6 @@ static void wcn36xx_remove(struct platform_device *pdev)
 	mutex_destroy(&wcn->hal_mutex);
 	ieee80211_free_hw(hw);
 }
-#if LINUX_VERSION_IS_LESS(6,13,0)
-static int bp_wcn36xx_remove(struct platform_device *pdev) {
-	wcn36xx_remove(pdev);
-
-	return 0;
-}
-#endif
 
 static const struct of_device_id wcn36xx_of_match[] = {
 	{ .compatible = "qcom,wcnss-wlan" },
@@ -1688,9 +1681,16 @@ static const struct of_device_id wcn36xx_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, wcn36xx_of_match);
 
+#if LINUX_VERSION_IS_LESS(6,11,0)
+static int bp_wcn36xx_remove(struct platform_device *pdev) {
+	wcn36xx_remove(pdev);
+
+	return 0;
+}
+#endif
 static struct platform_driver wcn36xx_driver = {
 	.probe = wcn36xx_probe,
-#if LINUX_VERSION_IS_GEQ(6,13,0)
+#if LINUX_VERSION_IS_GEQ(6,11,0)
 	.remove = wcn36xx_remove,
 #else
 	.remove = bp_wcn36xx_remove,
